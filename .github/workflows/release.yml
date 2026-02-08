@@ -33,7 +33,7 @@ jobs:
         with:
           repository: ace1ofspades/homebrew-git-archive
           path: homebrew
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.HOMEBREW_TOKEN }}
 
       - name: Update formula
         run: |
