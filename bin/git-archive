@@ -1,10 +1,17 @@
 #!/usr/bin/env bash
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-source "$SCRIPT_DIR/../lib/common.sh"
-source "$SCRIPT_DIR/../lib/archive.sh"
-source "$SCRIPT_DIR/../lib/extract.sh"
+if [[ -n "$GIT_ARCHIVE_LIB" ]]; then
+  source "$GIT_ARCHIVE_LIB/common.sh"
+  source "$GIT_ARCHIVE_LIB/archive.sh"
+  source "$GIT_ARCHIVE_LIB/extract.sh"
+else
+  SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+  source "$SCRIPT_DIR/../lib/common.sh"
+  source "$SCRIPT_DIR/../lib/archive.sh"
+  source "$SCRIPT_DIR/../lib/extract.sh"
+fi
+
 
 if [[ "$1" == "--version" ]]; then
   echo "git-archive 0.2.1"
