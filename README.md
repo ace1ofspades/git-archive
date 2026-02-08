@@ -1,40 +1,33 @@
 # git-archive
 
-Minimal, offline ve güvenli Git arşivleme aracı.
+Offline-first Git archiving tool.
 
-## Özellikler
-- Local repo arşivleme
-- Remote repo (URL) arşivleme
-- git bundle + SHA256 checksum
-- Tek ZIP çıktı
+## New in v0.2.1
+- --no-checksum (skip checksum generation)
+- --verify-only (verify archive without restore)
 
-## Kurulum
+## Usage
 
+### Archive
 ```bash
-mkdir -p ~/.local/bin
-curl -fsSL https://raw.githubusercontent.com/USERNAME/git-archive/main/git-archive.sh \
-  -o ~/.local/bin/git-archive
-chmod +x ~/.local/bin/git-archive
+git-archive
+git-archive --no-checksum
+git-archive --name legacy --encrypt
 ```
 
-PATH yoksa:
+### Verify only
 ```bash
-export PATH="$HOME/.local/bin:$PATH"
+git-archive extract repo.zip --verify-only
 ```
 
-## Kullanım
-
-### Local repo
+### Extract
 ```bash
-git archive
+git-archive extract repo.zip --out ~/restore
 ```
 
-### Remote repo
-```bash
-git archive https://github.com/org/repo.git
-```
-
-## Çıktı
-```
-repo-name_YYYY-MM-DD.zip
-```
+## Exit codes
+- 0 success
+- 10 verification failed
+- 20 invalid input
+- 30 crypto error
+- 64 usage error

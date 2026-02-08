@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
+source "$SCRIPT_DIR/../lib/archive.sh"
+source "$SCRIPT_DIR/../lib/extract.sh"
+
+if [[ "$1" == "--version" ]]; then
+  echo "git-archive 0.2.1"
+  exit 0
+fi
+
+CMD="archive"
+if [[ "$1" == "extract" ]]; then
+  CMD="extract"
+  shift
+fi
+
+case "$CMD" in
+  archive) run_archive "$@" ;;
+  extract) run_extract "$@" ;;
+  *) usage; exit 64 ;;
+esac
