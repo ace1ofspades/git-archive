@@ -31,20 +31,24 @@ run_archive() {
 
   cd "$ROOT"
 
-  git bundle create "$ARCHIVE_NAME.bundle" --all
+  ARCHIVE_DIR="$ARCHIVE_NAME"
+mkdir -p "$ARCHIVE_DIR"
 
-  FILES=("$ARCHIVE_NAME.bundle")
+git bundle create "$ARCHIVE_DIR/$ARCHIVE_NAME.bundle" --all
+
+
+  FILES=("$ARCHIVE_DIR")
 
   if ! $NO_CHECKSUM; then
-    $HASH_CMD "$ARCHIVE_NAME.bundle" > "$ARCHIVE_NAME.bundle.sha256"
-    FILES+=("$ARCHIVE_NAME.bundle.sha256")
+    $HASH_CMD "$ARCHIVE_DIR/$ARCHIVE_NAME.bundle" > "$ARCHIVE_DIR/$ARCHIVE_NAME.bundle.sha256"
+    # checksum already inside archive dir
   fi
 
   # manifest.json
   COMMIT=$(git rev-parse HEAD)
   BRANCHES=$(git branch | wc -l | tr -d ' ')
   TAGS=$(git tag | wc -l | tr -d ' ')
-  cat <<EOF > manifest.json
+  cat <<EOF > "$ARCHIVE_DIR/manifest.json"
 {
   "repo": "$REPO",
   "archived_at": "$(date -Iseconds)",
@@ -57,8 +61,8 @@ run_archive() {
 }
 EOF
 
-  FILES+=("manifest.json")
-  zip -q "$ARCHIVE_NAME.zip" "${FILES[@]}"
+  # manifest already inside archive dir
+  zip -qr "$ARCHIVE_NAME.zip" "$ARCHIVE_DIR"
 
   if $ENCRYPT; then
     openssl aes-256-cbc -salt -in "$ARCHIVE_NAME.zip" -out "$ARCHIVE_NAME.zip.enc" || die "Encryption failed" 30
