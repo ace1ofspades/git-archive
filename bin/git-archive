@@ -29,7 +29,11 @@ case "$1" in
     exit 0
     ;;
   --version)
-    echo "git-archive 0.2.3"
+    if [[ -n "$GIT_ARCHIVE_VERSION" ]]; then
+      echo "git-archive $GIT_ARCHIVE_VERSION"
+    else
+      echo "git-archive (unknown)"
+    fi
     exit 0
     ;;
 esac
