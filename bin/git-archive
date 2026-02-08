@@ -3,43 +3,50 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# --- Resolve lib directory (local + Homebrew) ---
 if [[ -n "$GIT_ARCHIVE_LIB" && -f "$GIT_ARCHIVE_LIB/common.sh" ]]; then
   LIB_DIR="$GIT_ARCHIVE_LIB"
-
 elif [[ -f "$SCRIPT_DIR/../lib/common.sh" ]]; then
-  # local repo usage
   LIB_DIR="$SCRIPT_DIR/../lib"
-
 elif [[ -f "$SCRIPT_DIR/../libexec/common.sh" ]]; then
-  # Homebrew Cellar layout
   LIB_DIR="$SCRIPT_DIR/../libexec"
-
 elif [[ -f "/opt/homebrew/opt/git-archive/libexec/common.sh" ]]; then
-  # Homebrew opt prefix (stable)
   LIB_DIR="/opt/homebrew/opt/git-archive/libexec"
-
 else
   echo "❌ Cannot locate git-archive lib directory" >&2
   exit 1
 fi
 
+# shellcheck source=/dev/null
 source "$LIB_DIR/common.sh"
 source "$LIB_DIR/archive.sh"
 source "$LIB_DIR/extract.sh"
 
-if [[ "$1" == "--version" ]]; then
-  echo "git-archive 0.2.2"
-  exit 0
-fi
+# --- Global flags (NO SIDE EFFECTS) ---
+case "$1" in
+  ""|-h|--help)
+    usage
+    exit 0
+    ;;
+  --version)
+    echo "git-archive 0.2.3"
+    exit 0
+    ;;
+esac
 
-CMD="archive"
-if [[ "$1" == "extract" ]]; then
-  CMD="extract"
-  shift
-fi
-
-case "$CMD" in
-  archive) run_archive "$@" ;;
-  extract) run_extract "$@" ;;
-  *) usage; exit 64 ;;
+# --- Subcommands / actions ---
+case "$1" in
+  --archive)
+    shift
+    run_archive "$@"
+    ;;
+  extract)
+    shift
+    run_extract "$@"
+    ;;
+  *)
+    echo "❌ Invalid command: $1" >&2
+    usage
+    exit 64
+    ;;
 esac
