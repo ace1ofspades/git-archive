@@ -1,17 +1,31 @@
 #!/usr/bin/env bash
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 if [[ -n "$GIT_ARCHIVE_LIB" ]]; then
-  source "$GIT_ARCHIVE_LIB/common.sh"
-  source "$GIT_ARCHIVE_LIB/archive.sh"
-  source "$GIT_ARCHIVE_LIB/extract.sh"
+  LIB_DIR="$GIT_ARCHIVE_LIB"
+
+elif [[ -d "$SCRIPT_DIR/../lib" ]]; then
+  # local repo usage
+  LIB_DIR="$SCRIPT_DIR/../lib"
+
+elif [[ -d "$SCRIPT_DIR/../libexec" ]]; then
+  # Homebrew Cellar direct layout
+  LIB_DIR="$SCRIPT_DIR/../libexec"
+
+elif [[ -d "/opt/homebrew/opt/git-archive/libexec" ]]; then
+  # Homebrew opt prefix (stable & recommended)
+  LIB_DIR="/opt/homebrew/opt/git-archive/libexec"
+
 else
-  SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-  source "$SCRIPT_DIR/../lib/common.sh"
-  source "$SCRIPT_DIR/../lib/archive.sh"
-  source "$SCRIPT_DIR/../lib/extract.sh"
+  echo "❌ Cannot locate git-archive lib directory" >&2
+  exit 1
 fi
 
+source "$LIB_DIR/common.sh"
+source "$LIB_DIR/archive.sh"
+source "$LIB_DIR/extract.sh"
 
 if [[ "$1" == "--version" ]]; then
   echo "git-archive 0.2.1"
