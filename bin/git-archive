@@ -3,19 +3,19 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-if [[ -n "$GIT_ARCHIVE_LIB" ]]; then
+if [[ -n "$GIT_ARCHIVE_LIB" && -f "$GIT_ARCHIVE_LIB/common.sh" ]]; then
   LIB_DIR="$GIT_ARCHIVE_LIB"
 
-elif [[ -d "$SCRIPT_DIR/../lib" ]]; then
+elif [[ -f "$SCRIPT_DIR/../lib/common.sh" ]]; then
   # local repo usage
   LIB_DIR="$SCRIPT_DIR/../lib"
 
-elif [[ -d "$SCRIPT_DIR/../libexec" ]]; then
-  # Homebrew Cellar direct layout
+elif [[ -f "$SCRIPT_DIR/../libexec/common.sh" ]]; then
+  # Homebrew Cellar layout
   LIB_DIR="$SCRIPT_DIR/../libexec"
 
-elif [[ -d "/opt/homebrew/opt/git-archive/libexec" ]]; then
-  # Homebrew opt prefix (stable & recommended)
+elif [[ -f "/opt/homebrew/opt/git-archive/libexec/common.sh" ]]; then
+  # Homebrew opt prefix (stable)
   LIB_DIR="/opt/homebrew/opt/git-archive/libexec"
 
 else
@@ -28,7 +28,7 @@ source "$LIB_DIR/archive.sh"
 source "$LIB_DIR/extract.sh"
 
 if [[ "$1" == "--version" ]]; then
-  echo "git-archive 0.2.1"
+  echo "git-archive 0.2.2"
   exit 0
 fi
 
