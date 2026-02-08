@@ -42,7 +42,7 @@ jobs:
           sed -i "s|url \".*\"|url \"https://github.com/ace1ofspades/git-archive/archive/refs/tags/v${VERSION}.tar.gz\"|" "$FORMULA"
           sed -i "s|sha256 \".*\"|sha256 \"${SHA256}\"|" "$FORMULA"
           sed -i "s/git-archive [0-9.]*/git-archive ${VERSION}/" "$FORMULA"
-          sed -i "s/GIT_ARCHIVE_VERSION: \".*\"/GIT_ARCHIVE_VERSION: \"${VERSION}\"/" Formula/git-archive.rb
+          sed -i "s/GIT_ARCHIVE_VERSION: \".*\"/GIT_ARCHIVE_VERSION: \"${VERSION}\"/" "$FORMULA"
 
       - name: Commit and push formula
         run: |
