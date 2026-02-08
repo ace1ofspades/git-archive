@@ -29,10 +29,10 @@ case "$1" in
     exit 0
     ;;
   --version)
-    if [[ -n "$GIT_ARCHIVE_VERSION" ]]; then
-      echo "git-archive $GIT_ARCHIVE_VERSION"
+    if [[ -f "$LIB_DIR/VERSION" ]]; then
+      echo "git-archive $(cat "$LIB_DIR/VERSION")"
     else
-      echo "git-archive (unknown)"
+      echo "git-archive unknown"
     fi
     exit 0
     ;;
