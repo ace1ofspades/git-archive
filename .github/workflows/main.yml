@@ -1,0 +1,54 @@
+name: Release & Update Homebrew Formula
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  homebrew:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Download release tarball
+        run: |
+          URL="https://github.com/${GITHUB_REPOSITORY}/archive/refs/tags/${GITHUB_REF_NAME}.tar.gz"
+          curl -L "$URL" -o source.tar.gz
+
+      - name: Compute sha256
+        run: |
+          SHA256=$(sha256sum source.tar.gz | awk '{print $1}')
+          echo "SHA256=$SHA256" >> $GITHUB_ENV
+
+      - name: Checkout homebrew tap
+        uses: actions/checkout@v4
+        with:
+          repository: ace1ofspades/homebrew-git-archive
+          path: homebrew
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update formula
+        run: |
+          FORMULA="homebrew/Formula/git-archive.rb"
+
+          sed -i "s|url \".*\"|url \"https://github.com/ace1ofspades/git-archive/archive/refs/tags/v${VERSION}.tar.gz\"|" "$FORMULA"
+          sed -i "s|sha256 \".*\"|sha256 \"${SHA256}\"|" "$FORMULA"
+          sed -i "s/git-archive [0-9.]*/git-archive ${VERSION}/" "$FORMULA"
+
+      - name: Commit and push formula
+        run: |
+          cd homebrew
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add Formula/git-archive.rb
+          git commit -m "git-archive v${VERSION}"
+          git push
