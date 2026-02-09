@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export PATH="$PWD/bin:$PATH"
+
 setup() {
   TEST_DIR="$(mktemp -d)"
   cd "$TEST_DIR"
