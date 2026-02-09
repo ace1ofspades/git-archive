@@ -18,9 +18,10 @@ jobs:
 
       - name: Make scripts executable
         run: |
-          chmod +x git-archive
-          chmod +x archive.sh
-          chmod +x extract.sh
+          chmod +x bin/git-archive
+          chmod +x lib/archive.sh
+          chmod +x lib/extract.sh
+          chmod +x lib/common.sh
 
       - name: Run Bats tests
         run: |
