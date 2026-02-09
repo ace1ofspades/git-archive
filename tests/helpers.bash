@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BIN="$ROOT_DIR/bin/git-archive"
+ARCHIVE="$ROOT_DIR/lib/archive.sh"
+EXTRACT="$ROOT_DIR/lib/extract.sh"
 
 setup() {
   TEST_DIR="$(mktemp -d)"
