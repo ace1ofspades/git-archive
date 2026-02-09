@@ -3,13 +3,13 @@
 load ./helpers.bash
 
 @test "archive creates zip file" {
-  run bash "$ARCHIVE"
+  run git-archive archive
   [ "$status" -eq 0 ]
   ls *.zip
 }
 
 @test "archive zip contains single root directory" {
-  bash "$ARCHIVE"
+  git-archive archive
   ZIP=$(ls *.zip | head -n1)
 
   run unzip -l "$ZIP"
@@ -20,6 +20,6 @@ load ./helpers.bash
 }
 
 @test "archive does not leave files in repo root" {
-  bash "$ARCHIVE"
+  git-archive archive
   ! ls | grep -E '\.bundle$|manifest\.json'
 }
