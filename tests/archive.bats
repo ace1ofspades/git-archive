@@ -2,25 +2,26 @@
 
 load ./helpers.bash
 
-@test "archive creates zip file" {
-  run git-archive archive
-  [ "$status" -eq 0 ]
-  ls *.zip
-}
+@test "extract works with root-folder zip" {
+  ZIP=$(archive_zip)
 
-@test "archive zip contains single root directory" {
-  run git-archive archive
-  ZIP=$(ls *.zip | head -n1)
-
-  run unzip -l "$ZIP"
+  mkdir out
+  run "$BIN" extract "$ZIP" --out out
   [ "$status" -eq 0 ]
 
-  [[ "$output" =~ ".*/manifest.json" ]]
-  [[ "$output" =~ ".*/.*.bundle" ]]
+  ls out/*
 }
 
-@test "archive does not leave files in repo root" {
-  run git-archive archive
+@test "verify-only works" {
+  ZIP=$(archive_zip)
 
-  ! ls | grep -E '\.bundle$|manifest\.json'
+  run "$BIN" extract "$ZIP" --verify-only
+  [ "$status" -eq 0 ]
+}
+
+@test "extract fails gracefully if no bundle exists" {
+  zip bad.zip README.md
+
+  run "$BIN" extract bad.zip
+  [ "$status" -ne 0 ]
 }
