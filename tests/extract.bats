@@ -6,7 +6,7 @@ load ./helpers.bash
   ZIP=$(archive_zip)
 
   mkdir out
-  run git-archive extract "$ZIP" --out out
+  run "$BIN" extract "$ZIP" --out out
   [ "$status" -eq 0 ]
 
   ls out/*
@@ -15,13 +15,13 @@ load ./helpers.bash
 @test "verify-only works" {
   ZIP=$(archive_zip)
 
-  run git-archive extract "$ZIP" --verify-only
+  run "$BIN" extract "$ZIP" --verify-only
   [ "$status" -eq 0 ]
 }
 
 @test "extract fails gracefully if no bundle exists" {
   zip bad.zip README.md
 
-  run git-archive extract bad.zip
+  run "$BIN" extract bad.zip
   [ "$status" -ne 0 ]
 }
