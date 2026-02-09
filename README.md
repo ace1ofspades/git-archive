@@ -1,138 +1,147 @@
 # git-archive
 
-**git-archive** is a minimal, offline-first Git archiving tool designed to safely store inactive or legacy repositories as single archive files, without relying on hosted Git services.
+`git-archive` is a lightweight CLI tool for safely archiving and restoring Git repositories using `git bundle`.
 
-It supports:
-- Git bundle–based archiving
-- ZIP packaging
-- Optional checksum & verification
-- Archive extraction (restore)
-- CI-friendly exit codes
-- Local and Homebrew-compatible runtime
+It is designed for:
+- offline backups
+- repository transfers
+- long-term storage
+- reproducible archives
 
 ---
 
-## ✨ Features
+## Features
 
-- 📦 Create a single archive from a Git repository  
-- 🔐 Optional checksum generation & verification  
-- ♻️ Restore repositories from archives  
-- 📴 Fully offline-friendly  
-- 🧰 Works both as a cloned repo and a Homebrew-installed tool  
-- 🤖 CI-friendly (predictable exit codes)  
-- 🍺 Homebrew support  
+- Archive any Git repository into a single zip file
+- Uses `git bundle` internally (no history loss)
+- Archive contents are wrapped in a single root directory
+- Optional SHA256 checksum generation
+- Optional encryption and GPG signing
+- Reliable extraction and verification
+- No temporary files left in the working directory
+- Fully compatible with Homebrew
 
 ---
 
-## 📦 Installation
+## Installation
 
-### Homebrew (recommended)
-
-```bash
-brew tap ace1ofspades/git-archive
-brew install git-archive
-```
-
-Verify installation:
+### Homebrew
 
 ```bash
-git-archive --version
+brew install ace1ofspades/tap/git-archive
 ```
 
 ---
 
-### Manual / Local usage
-
-Clone the repository:
-
-```bash
-git clone https://github.com/ace1ofspades/git-archive.git
-cd git-archive
-```
-
-Run directly:
-
-```bash
-./bin/git-archive --version
-```
-
-No build step required.
-
----
-
-## 🚀 Usage
+## Usage
 
 ### Archive a repository
 
-From inside a git repository:
-
 ```bash
-git-archive
+git-archive archive
 ```
 
-With a custom name:
+This creates a zip file like:
 
-```bash
-git-archive --name my-project-backup
+```
+my-repo_2026-02-09.zip
+└── my-repo_2026-02-09/
+    ├── my-repo_2026-02-09.bundle
+    ├── my-repo_2026-02-09.bundle.sha256
+    └── manifest.json
 ```
 
-This creates a single ZIP archive containing:
-- a Git bundle
-- metadata (manifest)
-- optional checksum
+> The archive is created using a temporary directory and cleaned up automatically.  
+> No files are left behind in the repository.
 
 ---
 
-### Extract / restore an archive
+### Archive options
 
 ```bash
-git-archive extract my-project-backup.zip
+git-archive archive [path|repo-url] [options]
+
+Options:
+  --out DIR          Output directory
+  --name NAME        Custom archive name
+  --prefix TEXT      Prefix for archive name
+  --suffix TEXT      Suffix for archive name
+  --encrypt          Encrypt the archive using AES-256
+  --sign             GPG-sign the archive
+  --no-checksum      Disable checksum generation
 ```
 
-Optionally specify a target directory:
+---
+
+## Extract an archive
 
 ```bash
-git-archive extract my-project-backup.zip --path ./restored
+git-archive extract my-repo_2026-02-09.zip
+```
+
+This restores the repository to:
+
+```
+./my-repo_2026-02-09
+```
+
+### Extract options
+
+```bash
+git-archive extract ARCHIVE.zip [options]
+
+Options:
+  --out DIR          Output directory
+  --no-verify        Skip checksum verification
+  --verify-only     Verify archive only (no restore)
+```
+
+The extractor:
+- works with archives containing a root directory
+- discovers `.bundle` and `.sha256` files recursively
+- is backward compatible with older archive formats
+
+---
+
+## Verification
+
+To verify an archive without extracting:
+
+```bash
+git-archive extract my-repo_2026-02-09.zip --verify-only
 ```
 
 ---
 
-## 🔍 Runtime path resolution (important)
+## Testing
 
-`git-archive` is designed to work **both** when run from a cloned repository and when installed via Homebrew.
+This project uses **Bats** for integration and regression testing.
 
-At runtime, the tool resolves its library directory in the following order:
+Run tests locally:
 
-1. `$GIT_ARCHIVE_LIB` (if explicitly set)
-2. `../lib` relative to the script (local clone usage)
-3. `../libexec` (Homebrew Cellar layout)
-4. `/opt/homebrew/opt/git-archive/libexec` (Homebrew stable prefix)
+```bash
+brew install bats-core
+bats tests/
+```
 
-This approach avoids relying on Homebrew environment wrappers and ensures compatibility across:
-- Homebrew installs
-- manual installs
-- CI environments
+Tests are automatically executed on **Pull Requests** via GitHub Actions.
 
 ---
 
-## 🤖 Exit codes
+## Compatibility
 
-The tool uses standard, CI-friendly exit codes:
-
-- `0` – success  
-- `64` – invalid usage / arguments  
-- `1` – runtime or archive error  
+- macOS (Homebrew)
+- Linux (manual install)
+- Archives created with older versions are fully supported
 
 ---
 
-## 🛠 Development notes
+## Changelog
 
-- Avoid force-updating release tags (Homebrew caches aggressively).
-- Always release a new version (`vX.Y.Z`) when runtime behavior changes.
-- The `opt` prefix is used intentionally for Homebrew stability.
+See [CHANGELOG.md](./CHANGELOG.md) for detailed release notes.
 
 ---
 
-## 📄 License
+## License
 
-MIT License.
+MIT
