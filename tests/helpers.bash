@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ARCHIVE="$ROOT_DIR/lib/archive.sh"
-EXTRACT="$ROOT_DIR/lib/extract.sh"
+
+# Homebrew'u devre dışı bırak
+export PATH="$ROOT_DIR/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 setup() {
   TEST_DIR="$(mktemp -d)"
