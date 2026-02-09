@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
 run_archive() {
   NAME=""
   PREFIX=""
@@ -31,23 +34,29 @@ run_archive() {
 
   cd "$ROOT"
 
-  ARCHIVE_DIR="$ARCHIVE_NAME"
-mkdir -p "$ARCHIVE_DIR"
+  # ─────────────────────────────────────────────
+  # 1️⃣ Geçici dizin
+  TMP_DIR=$(mktemp -d)
+  ARCHIVE_DIR="$TMP_DIR/$ARCHIVE_NAME"
+  mkdir -p "$ARCHIVE_DIR"
 
-git bundle create "$ARCHIVE_DIR/$ARCHIVE_NAME.bundle" --all
+  # ─────────────────────────────────────────────
+  # 2️⃣ Git bundle
+  git bundle create "$ARCHIVE_DIR/$ARCHIVE_NAME.bundle" --all
 
-
-  FILES=("$ARCHIVE_DIR")
-
+  # ─────────────────────────────────────────────
+  # 3️⃣ Checksum
   if ! $NO_CHECKSUM; then
-    $HASH_CMD "$ARCHIVE_DIR/$ARCHIVE_NAME.bundle" > "$ARCHIVE_DIR/$ARCHIVE_NAME.bundle.sha256"
-    # checksum already inside archive dir
+    $HASH_CMD "$ARCHIVE_DIR/$ARCHIVE_NAME.bundle" \
+      > "$ARCHIVE_DIR/$ARCHIVE_NAME.bundle.sha256"
   fi
 
-  # manifest.json
+  # ─────────────────────────────────────────────
+  # 4️⃣ Manifest
   COMMIT=$(git rev-parse HEAD)
   BRANCHES=$(git branch | wc -l | tr -d ' ')
   TAGS=$(git tag | wc -l | tr -d ' ')
+
   cat <<EOF > "$ARCHIVE_DIR/manifest.json"
 {
   "repo": "$REPO",
@@ -57,27 +66,42 @@ git bundle create "$ARCHIVE_DIR/$ARCHIVE_NAME.bundle" --all
   "tags": $TAGS,
   "checksum": $([ "$NO_CHECKSUM" = true ] && echo false || echo true),
   "tool": "git-archive",
-  "version": "0.2.1"
+  "version": "$(git describe --tags --dirty --always)"
 }
 EOF
 
-  # manifest already inside archive dir
-  zip -qr "$ARCHIVE_NAME.zip" "$ARCHIVE_DIR"
+  # ─────────────────────────────────────────────
+  # 5️⃣ Zip (root = klasör)
+  (
+    cd "$TMP_DIR" || exit 1
+    zip -qr "$ARCHIVE_NAME.zip" "$ARCHIVE_NAME"
+  )
 
+  # ─────────────────────────────────────────────
+  # 6️⃣ Encrypt (opsiyonel)
+  FINAL="$ARCHIVE_NAME.zip"
   if $ENCRYPT; then
-    openssl aes-256-cbc -salt -in "$ARCHIVE_NAME.zip" -out "$ARCHIVE_NAME.zip.enc" || die "Encryption failed" 30
-    rm "$ARCHIVE_NAME.zip"
+    openssl aes-256-cbc -salt \
+      -in "$TMP_DIR/$ARCHIVE_NAME.zip" \
+      -out "$TMP_DIR/$ARCHIVE_NAME.zip.enc" || die "Encryption failed" 30
+    rm -f "$TMP_DIR/$ARCHIVE_NAME.zip"
     FINAL="$ARCHIVE_NAME.zip.enc"
-  else
-    FINAL="$ARCHIVE_NAME.zip"
   fi
 
+  # ─────────────────────────────────────────────
+  # 7️⃣ Sign (opsiyonel)
   if $SIGN; then
-    gpg --detach-sign "$FINAL" || die "GPG signing failed" 30
+    gpg --detach-sign "$TMP_DIR/$FINAL" || die "GPG signing failed" 30
   fi
 
-  mv "$ARCHIVE_NAME."* "$OUT/"
-  rm -f manifest.json
+  # ─────────────────────────────────────────────
+  # 8️⃣ Çıktıyı taşı
+  mkdir -p "$OUT"
+  mv "$TMP_DIR/$FINAL"* "$OUT/"
+
+  # ─────────────────────────────────────────────
+  # 9️⃣ TEMİZLİK (kritik)
+  rm -rf "$TMP_DIR"
 
   echo "✅ Archive created: $OUT/$FINAL"
 }
