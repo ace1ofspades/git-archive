@@ -18,7 +18,6 @@ jobs:
 
       - name: Make scripts executable
         run: |
-          chmod +x bin/git-archive
           chmod +x lib/archive.sh
           chmod +x lib/extract.sh
           chmod +x lib/common.sh
