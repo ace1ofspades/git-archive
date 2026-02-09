@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-export PATH="$PWD/bin:$PATH"
+# Absolute path to repo root (where bin/git-archive exists)
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BIN="$ROOT_DIR/bin/git-archive"
 
 setup() {
   TEST_DIR="$(mktemp -d)"
@@ -18,6 +20,6 @@ teardown() {
 }
 
 archive_zip() {
-  git-archive archive
+  "$BIN" archive
   ls *.zip | head -n1
 }
